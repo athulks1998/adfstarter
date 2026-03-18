@@ -1,0 +1,25 @@
+{
+	"name": "selectedfiles trigger",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "conditionalProcessing",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Minute",
+				"interval": 15,
+				"startTime": "2026-03-18T15:45:00",
+				"endTime": "2026-03-19T15:50:00",
+				"timeZone": "W. Europe Standard Time"
+			}
+		}
+	}
+}
