@@ -1,5 +1,5 @@
 {
-	"name": "rawdata",
+	"name": "copieddata",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "linkedserviceDL",
