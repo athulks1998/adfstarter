@@ -1,0 +1,6 @@
+{
+	"name": "AthulSelfHosted",
+	"properties": {
+		"type": "SelfHosted"
+	}
+}
