@@ -894,8 +894,7 @@
 				],
 				"type": "BlobEventsTrigger",
 				"typeProperties": {
-					"blobPathBeginsWith": "/rawdata/blobs/",
-					"blobPathEndsWith": "netflix_titles.csv",
+					"blobPathBeginsWith": "/rawdata/blobs/rawfolder/netflix_titles.csv",
 					"ignoreEmptyBlobs": true,
 					"scope": "[parameters('StorageMonitorTrigger_properties_typeProperties_scope')]",
 					"events": [
