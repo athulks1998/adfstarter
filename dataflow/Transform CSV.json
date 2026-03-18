@@ -1,0 +1,66 @@
+{
+	"name": "Transform CSV",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "dataflowsource",
+						"type": "DatasetReference"
+					},
+					"name": "sourceCSV"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "TransformedDS",
+						"type": "DatasetReference"
+					},
+					"name": "outputwrite"
+				}
+			],
+			"transformations": [
+				{
+					"name": "selectcolumn"
+				},
+				{
+					"name": "filterstarts"
+				},
+				{
+					"name": "splitOne"
+				},
+				{
+					"name": "alterRow"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          {Richard Finn} as string,",
+				"          {81145628} as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> sourceCSV",
+				"sourceCSV select(mapColumn(",
+				"          {Richard Finn}",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectcolumn",
+				"selectcolumn filter(startsWith({Richard Finn} ,'M')) ~> filterstarts",
+				"filterstarts split(length({Richard Finn})<10,",
+				"     length({Richard Finn})==10,",
+				"     disjoint: false) ~> splitOne@(lengthlessthan10, lengthis5, greaterthan10)",
+				"splitOne@lengthlessthan10 alterRow(insertIf(1==1)) ~> alterRow",
+				"alterRow sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> outputwrite"
+			]
+		}
+	}
+}
