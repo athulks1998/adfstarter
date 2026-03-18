@@ -1,0 +1,24 @@
+{
+	"name": "StorageMonitorTrigger",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Stopped",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "Finalpipeline",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "BlobEventsTrigger",
+		"typeProperties": {
+			"blobPathBeginsWith": "/rawdata/blobs/rawfolder/netflix_titles.csv",
+			"ignoreEmptyBlobs": true,
+			"scope": "/subscriptions/5e9d0c79-0107-4cd8-ad43-4441e49e1837/resourceGroups/azurefandamentals/providers/Microsoft.Storage/storageAccounts/azurefundamentalsathul",
+			"events": [
+				"Microsoft.Storage.BlobCreated"
+			]
+		}
+	}
+}
