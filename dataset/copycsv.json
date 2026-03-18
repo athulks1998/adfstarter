@@ -1,5 +1,5 @@
 {
-	"name": "DelimitedText2",
+	"name": "copycsv",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "linkedserviceDL",
@@ -10,7 +10,6 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"fileName": "netflix_titles.csv",
 				"folderPath": "rawfolder",
 				"fileSystem": "rawdata"
 			},

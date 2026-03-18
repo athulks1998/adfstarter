@@ -50,7 +50,7 @@
 				},
 				"inputs": [
 					{
-						"referenceName": "DelimitedText2",
+						"referenceName": "copycsv",
 						"type": "DatasetReference"
 					}
 				],
