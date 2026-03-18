@@ -13,8 +13,7 @@
 		],
 		"type": "BlobEventsTrigger",
 		"typeProperties": {
-			"blobPathBeginsWith": "/rawdata/blobs/",
-			"blobPathEndsWith": "netflix_titles.csv",
+			"blobPathBeginsWith": "/rawdata/blobs/rawfolder/netflix_titles.csv",
 			"ignoreEmptyBlobs": true,
 			"scope": "/subscriptions/5e9d0c79-0107-4cd8-ad43-4441e49e1837/resourceGroups/azurefandamentals/providers/Microsoft.Storage/storageAccounts/azurefundamentalsathul",
 			"events": [
