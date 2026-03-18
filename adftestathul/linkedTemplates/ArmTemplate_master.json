@@ -19,6 +19,10 @@
 			"type": "string",
 			"defaultValue": "https://azurefundamentalsathul.dfs.core.windows.net/"
 		},
+		"StorageMonitorTrigger_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/5e9d0c79-0107-4cd8-ad43-4441e49e1837/resourceGroups/azurefandamentals/providers/Microsoft.Storage/storageAccounts/azurefundamentalsathul"
+		},
 		"containerUri": {
 			"type": "string",
 			"metadata": "URI to storage account containing linked ARM templates"
@@ -54,6 +58,9 @@
 					},
 					"linkedserviceDL_properties_typeProperties_url": {
 						"value": "[parameters('linkedserviceDL_properties_typeProperties_url')]"
+					},
+					"StorageMonitorTrigger_properties_typeProperties_scope": {
+						"value": "[parameters('StorageMonitorTrigger_properties_typeProperties_scope')]"
 					}
 				}
 			},
