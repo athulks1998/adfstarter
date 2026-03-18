@@ -16,7 +16,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataset": {
-						"referenceName": "DelimitedText4",
+						"referenceName": "copieddata",
 						"type": "DatasetReference"
 					},
 					"fieldList": [
