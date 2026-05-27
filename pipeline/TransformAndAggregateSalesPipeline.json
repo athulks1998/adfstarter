@@ -1,0 +1,88 @@
+{
+    "name": "TransformAndAggregateSalesPipeline",
+    "properties": {
+        "description": "Reads silver-layer Parquet sales data, computes regional and product-level aggregations, and upserts the results into the gold SQL table. Designed to be idempotent — safe to re-run for the same date.",
+        "parameters": {
+            "reportDate": {
+                "type": "string",
+                "defaultValue": "@formatDateTime(utcNow(), 'yyyy-MM-dd')"
+            }
+        },
+        "activities": [
+            {
+                "name": "AggregateSalesDataflow",
+                "description": "Dataflow activity: compute total revenue, quantity, avg order value per region+product.",
+                "type": "ExecuteDataFlow",
+                "policy": {
+                    "timeout": "0.02:00:00",
+                    "retry": 1,
+                    "retryIntervalInSeconds": 120,
+                    "secureOutput": false
+                },
+                "typeProperties": {
+                    "dataflow": {
+                        "referenceName": "AggregateSalesDataflow",
+                        "type": "DataFlowReference",
+                        "parameters": {
+                            "reportDate": { "value": "@pipeline().parameters.reportDate", "type": "Expression" }
+                        }
+                    },
+                    "compute": {
+                        "coreCount": 8,
+                        "computeType": "General"
+                    },
+                    "traceLevel": "Fine"
+                }
+            },
+            {
+                "name": "UpsertGoldSummary",
+                "description": "Upsert aggregated results into the gold SQL table using MERGE semantics.",
+                "type": "Copy",
+                "dependsOn": [
+                    { "activity": "AggregateSalesDataflow", "dependencyConditions": ["Succeeded"] }
+                ],
+                "policy": {
+                    "timeout": "0.00:30:00",
+                    "retry": 2,
+                    "retryIntervalInSeconds": 30
+                },
+                "typeProperties": {
+                    "source": {
+                        "type": "ParquetSource",
+                        "storeSettings": {
+                            "type": "AzureBlobFSReadSettings",
+                            "recursive": false
+                        }
+                    },
+                    "sink": {
+                        "type": "AzureSqlSink",
+                        "writeBehavior": "upsert",
+                        "upsertSettings": {
+                            "useTempDB": true,
+                            "keys": ["region", "product_id", "report_date"]
+                        },
+                        "sqlWriterUseTableLock": false,
+                        "disableMetricsCollection": false
+                    },
+                    "enableStaging": false
+                },
+                "inputs": [
+                    {
+                        "referenceName": "SilverSalesParquetDS",
+                        "type": "DatasetReference",
+                        "parameters": {
+                            "partitionDate": { "value": "@pipeline().parameters.reportDate", "type": "Expression" }
+                        }
+                    }
+                ],
+                "outputs": [
+                    {
+                        "referenceName": "GoldSalesSummaryDS",
+                        "type": "DatasetReference"
+                    }
+                ]
+            }
+        ],
+        "annotations": ["transformation", "aggregation", "silver-to-gold"]
+    }
+}
