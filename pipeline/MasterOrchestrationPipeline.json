@@ -1,0 +1,64 @@
+{
+    "name": "MasterOrchestrationPipeline",
+    "properties": {
+        "description": "Master pipeline that orchestrates the full end-to-end sales ETL: ingestion → transformation → aggregation. Triggered nightly. Passes a consistent run date to all child pipelines.",
+        "parameters": {
+            "runDate": {
+                "type": "string",
+                "defaultValue": "@formatDateTime(utcNow(), 'yyyy-MM-dd')"
+            }
+        },
+        "variables": {
+            "pipelineRunStatus": { "type": "String", "defaultValue": "Running" }
+        },
+        "activities": [
+            {
+                "name": "RunIngestion",
+                "description": "Step 1: ingest raw CSV from blob to silver Parquet.",
+                "type": "ExecutePipeline",
+                "dependsOn": [],
+                "typeProperties": {
+                    "pipeline": {
+                        "referenceName": "IngestRawSalesPipeline",
+                        "type": "PipelineReference"
+                    },
+                    "waitOnCompletion": true,
+                    "parameters": {
+                        "triggerDate":      { "value": "@pipeline().parameters.runDate", "type": "Expression" },
+                        "sourceFileName":   "sales_daily.csv"
+                    }
+                }
+            },
+            {
+                "name": "RunTransformation",
+                "description": "Step 2: aggregate silver data into gold SQL summary.",
+                "type": "ExecutePipeline",
+                "dependsOn": [
+                    { "activity": "RunIngestion", "dependencyConditions": ["Succeeded"] }
+                ],
+                "typeProperties": {
+                    "pipeline": {
+                        "referenceName": "TransformAndAggregateSalesPipeline",
+                        "type": "PipelineReference"
+                    },
+                    "waitOnCompletion": true,
+                    "parameters": {
+                        "reportDate": { "value": "@pipeline().parameters.runDate", "type": "Expression" }
+                    }
+                }
+            },
+            {
+                "name": "SetSuccessStatus",
+                "type": "SetVariable",
+                "dependsOn": [
+                    { "activity": "RunTransformation", "dependencyConditions": ["Succeeded"] }
+                ],
+                "typeProperties": {
+                    "variableName": "pipelineRunStatus",
+                    "value": "Succeeded"
+                }
+            }
+        ],
+        "annotations": ["orchestration", "master", "nightly-etl"]
+    }
+}
