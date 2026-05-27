@@ -1,0 +1,11 @@
+{
+    "name": "AzureKeyVaultLS",
+    "properties": {
+        "type": "AzureKeyVault",
+        "description": "Key Vault linked service — all secrets are fetched from here. Never hardcode credentials.",
+        "typeProperties": {
+            "baseUrl": "https://<your-keyvault-name>.vault.azure.net/"
+        },
+        "annotations": []
+    }
+}
