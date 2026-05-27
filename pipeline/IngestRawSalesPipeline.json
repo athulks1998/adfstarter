@@ -1,0 +1,151 @@
+{
+    "name": "IngestRawSalesPipeline",
+    "properties": {
+        "description": "Ingests raw sales CSV files from Blob Storage into the ADLS Gen2 silver layer as Parquet. Validates, cleanses, and applies type casting before writing.",
+        "parameters": {
+            "triggerDate": {
+                "type": "string",
+                "defaultValue": "@formatDateTime(utcNow(), 'yyyy-MM-dd')"
+            },
+            "sourceFileName": {
+                "type": "string",
+                "defaultValue": "sales_daily.csv"
+            }
+        },
+        "variables": {
+            "processedCount": { "type": "Integer", "defaultValue": 0 },
+            "hasErrors":       { "type": "Boolean", "defaultValue": false }
+        },
+        "activities": [
+            {
+                "name": "ValidateSourceFile",
+                "description": "Check the source CSV exists before processing to avoid silent failures.",
+                "type": "GetMetadata",
+                "dependsOn": [],
+                "policy": {
+                    "timeout": "0.00:05:00",
+                    "retry": 2,
+                    "retryIntervalInSeconds": 30
+                },
+                "typeProperties": {
+                    "dataset": {
+                        "referenceName": "RawSalesCSVDS",
+                        "type": "DatasetReference",
+                        "parameters": {
+                            "fileName":   { "value": "@pipeline().parameters.sourceFileName", "type": "Expression" },
+                            "folderPath": "bronze/sales"
+                        }
+                    },
+                    "fieldList": ["exists", "size", "lastModified"],
+                    "storeSettings": {
+                        "type": "AzureBlobStorageReadSettings",
+                        "recursive": false
+                    }
+                }
+            },
+            {
+                "name": "CheckFileExists",
+                "description": "Branch: proceed only if the source file is present.",
+                "type": "IfCondition",
+                "dependsOn": [
+                    { "activity": "ValidateSourceFile", "dependencyConditions": ["Succeeded"] }
+                ],
+                "typeProperties": {
+                    "expression": {
+                        "value": "@activity('ValidateSourceFile').output.exists",
+                        "type": "Expression"
+                    },
+                    "ifTrueActivities": [
+                        {
+                            "name": "CopySalesToSilver",
+                            "description": "Copy raw CSV to silver layer as Parquet with data type mapping and null rejection.",
+                            "type": "Copy",
+                            "policy": {
+                                "timeout": "0.01:00:00",
+                                "retry": 3,
+                                "retryIntervalInSeconds": 60,
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "typeProperties": {
+                                "source": {
+                                    "type": "DelimitedTextSource",
+                                    "storeSettings": {
+                                        "type": "AzureBlobStorageReadSettings",
+                                        "recursive": false,
+                                        "enablePartitionDiscovery": false
+                                    },
+                                    "formatSettings": {
+                                        "type": "DelimitedTextReadSettings"
+                                    }
+                                },
+                                "sink": {
+                                    "type": "ParquetSink",
+                                    "storeSettings": {
+                                        "type": "AzureBlobFSWriteSettings"
+                                    },
+                                    "formatSettings": {
+                                        "type": "ParquetWriteSettings"
+                                    }
+                                },
+                                "enableStaging": false,
+                                "translator": {
+                                    "type": "TabularTranslator",
+                                    "mappings": [
+                                        { "source": { "name": "order_id" },       "sink": { "name": "order_id",            "type": "String" } },
+                                        { "source": { "name": "customer_id" },    "sink": { "name": "customer_id",         "type": "String" } },
+                                        { "source": { "name": "product_id" },     "sink": { "name": "product_id",          "type": "String" } },
+                                        { "source": { "name": "quantity" },       "sink": { "name": "quantity",            "type": "Int32" } },
+                                        { "source": { "name": "unit_price" },     "sink": { "name": "unit_price",          "type": "Decimal" } },
+                                        { "source": { "name": "order_date" },     "sink": { "name": "order_date",          "type": "DateTime" } },
+                                        { "source": { "name": "region" },         "sink": { "name": "region",              "type": "String" } },
+                                        { "source": { "name": "salesperson_id" }, "sink": { "name": "salesperson_id",      "type": "String" } }
+                                    ],
+                                    "typeConversion": true,
+                                    "typeConversionSettings": {
+                                        "allowDataTruncation": false,
+                                        "treatBooleanAsNumber": false
+                                    }
+                                }
+                            },
+                            "inputs": [
+                                {
+                                    "referenceName": "RawSalesCSVDS",
+                                    "type": "DatasetReference",
+                                    "parameters": {
+                                        "fileName":   { "value": "@pipeline().parameters.sourceFileName", "type": "Expression" },
+                                        "folderPath": "bronze/sales"
+                                    }
+                                }
+                            ],
+                            "outputs": [
+                                {
+                                    "referenceName": "SilverSalesParquetDS",
+                                    "type": "DatasetReference",
+                                    "parameters": {
+                                        "partitionDate": { "value": "@pipeline().parameters.triggerDate", "type": "Expression" }
+                                    }
+                                }
+                            ]
+                        }
+                    ],
+                    "ifFalseActivities": [
+                        {
+                            "name": "LogFileMissing",
+                            "description": "Emit a warning when the expected source file is not found.",
+                            "type": "Fail",
+                            "typeProperties": {
+                                "message": {
+                                    "value": "@concat('Source file not found: ', pipeline().parameters.sourceFileName, ' for date ', pipeline().parameters.triggerDate)",
+                                    "type": "Expression"
+                                },
+                                "errorCode": "SOURCE_FILE_MISSING"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "annotations": ["ingestion", "sales", "bronze-to-silver"]
+    }
+}
