@@ -1,0 +1,18 @@
+{
+    "name": "AzureBlobStorageLS",
+    "properties": {
+        "type": "AzureBlobStorage",
+        "description": "Linked service connecting to Azure Blob Storage for raw data ingestion (bronze layer).",
+        "typeProperties": {
+            "connectionString": {
+                "type": "AzureKeyVaultSecret",
+                "store": {
+                    "referenceName": "AzureKeyVaultLS",
+                    "type": "LinkedServiceReference"
+                },
+                "secretName": "blob-storage-connection-string"
+            }
+        },
+        "annotations": []
+    }
+}
