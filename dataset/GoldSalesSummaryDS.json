@@ -1,0 +1,26 @@
+{
+    "name": "GoldSalesSummaryDS",
+    "properties": {
+        "description": "Aggregated sales summary table in Azure SQL Database (gold layer).",
+        "linkedServiceName": {
+            "referenceName": "AzureSQLDatabaseLS",
+            "type": "LinkedServiceReference"
+        },
+        "type": "AzureSqlTable",
+        "typeProperties": {
+            "schema": "gold",
+            "table": "sales_summary"
+        },
+        "schema": [
+            { "name": "summary_id",       "type": "int",       "precision": 10 },
+            { "name": "region",           "type": "nvarchar" },
+            { "name": "product_id",       "type": "nvarchar" },
+            { "name": "total_quantity",   "type": "int" },
+            { "name": "total_revenue",    "type": "decimal",   "precision": 15, "scale": 2 },
+            { "name": "avg_order_value",  "type": "decimal",   "precision": 10, "scale": 2 },
+            { "name": "order_count",      "type": "int" },
+            { "name": "report_date",      "type": "date" },
+            { "name": "last_updated",     "type": "datetime2" }
+        ]
+    }
+}
