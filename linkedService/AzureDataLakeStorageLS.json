@@ -1,0 +1,19 @@
+{
+    "name": "AzureDataLakeStorageLS",
+    "properties": {
+        "type": "AzureBlobFS",
+        "description": "ADLS Gen2 linked service — used for bronze, silver, and gold data lake layers.",
+        "typeProperties": {
+            "url": "https://<your-adls-account>.dfs.core.windows.net",
+            "accountKey": {
+                "type": "AzureKeyVaultSecret",
+                "store": {
+                    "referenceName": "AzureKeyVaultLS",
+                    "type": "LinkedServiceReference"
+                },
+                "secretName": "adls-account-key"
+            }
+        },
+        "annotations": []
+    }
+}
