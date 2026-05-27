@@ -1,0 +1,37 @@
+{
+    "name": "SilverSalesParquetDS",
+    "properties": {
+        "description": "Cleansed, typed sales data in Parquet on ADLS Gen2 silver layer, partitioned by year/month.",
+        "linkedServiceName": {
+            "referenceName": "AzureDataLakeStorageLS",
+            "type": "LinkedServiceReference"
+        },
+        "parameters": {
+            "partitionDate": { "type": "string" }
+        },
+        "type": "Parquet",
+        "typeProperties": {
+            "location": {
+                "type": "AzureBlobFSLocation",
+                "folderPath": {
+                    "value": "@concat('silver/sales/year=', formatDateTime(dataset().partitionDate,'yyyy'), '/month=', formatDateTime(dataset().partitionDate,'MM'))",
+                    "type": "Expression"
+                },
+                "fileSystem": "data-lake"
+            },
+            "compressionCodec": "snappy"
+        },
+        "schema": [
+            { "name": "order_id",              "type": "String" },
+            { "name": "customer_id",           "type": "String" },
+            { "name": "product_id",            "type": "String" },
+            { "name": "quantity",              "type": "Int32" },
+            { "name": "unit_price",            "type": "Decimal", "precision": 10, "scale": 2 },
+            { "name": "total_amount",          "type": "Decimal", "precision": 12, "scale": 2 },
+            { "name": "order_date",            "type": "DateTime" },
+            { "name": "region",                "type": "String" },
+            { "name": "salesperson_id",        "type": "String" },
+            { "name": "ingestion_timestamp",   "type": "DateTime" }
+        ]
+    }
+}
